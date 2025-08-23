@@ -1,0 +1,62 @@
+# Global
+.env
+.env.*
+*.env
+*.env.*
+
+# Go build artifacts
+**/bin/
+**/build/
+**/dist/
+**/out/
+**/coverage/
+**/vendor/
+**/.idea/
+**/.vscode/
+**/.DS_Store
+**/node_modules/
+**/tmp/
+**/logs/
+**/*.log
+
+# Go specific
+**/go.sum
+**/go.mod
+**/*.test
+**/*.exe
+**/*.out
+
+# Docker
+**/postgres_data/
+**/*_postgres_data/
+**/initdb/
+**/init.sql
+
+# Ignore by pattern for all microservices (future-proof)
+*/.env
+*/.env.*
+*/*.env
+*/*.env.*
+
+# Ignore test output
+**/test-results/
+**/test_output/
+
+# Ignore coverage files
+**/coverage.*
+**/*.coverprofile
+
+# Ignore editor/project files
+**/.idea/
+**/.vscode/
+**/.history/
+**/.swp
+**/.swo
+
+# Ignore OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore docker-compose override files
+docker-compose.override.yml

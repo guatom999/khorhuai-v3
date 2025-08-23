@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  user-db:
+    image: postgres:latest
+    container_name: user_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  product-db:
+    image: postgres:latest
+    container_name: product_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  cart-db:
+    image: postgres:latest
+    container_name: cart_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5434:5432"
+    volumes:
+      - cart_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  order-db:
+    image: postgres:latest
+    container_name: order_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5435:5432"
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  payment-db:
+    image: postgres:latest
+    container_name: payment_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5436:5432"
+    volumes:
+      - payment_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  notification-db:
+    image: postgres:latest
+    container_name: notification_db
+    environment:
+      POSTGRES_DB: workshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test1234
+    ports:
+      - "5437:5432"
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  user_postgres_data:
+  product_postgres_data:
+  cart_postgres_data:
+  order_postgres_data:
+  payment_postgres_data:
+  notification_postgres_data:
