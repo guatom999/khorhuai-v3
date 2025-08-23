@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/guatom999/ecommerce-payment-api/config"
+	paymenthandlers "github.com/guatom999/ecommerce-payment-api/modules/paymentHandlers"
+	paymentrepositories "github.com/guatom999/ecommerce-payment-api/modules/paymentRepositories"
+	paymentusecases "github.com/guatom999/ecommerce-payment-api/modules/paymentUseCases"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -59,7 +62,7 @@ func (s *server) Start(pctx context.Context) {
 
 	s.app.Use(middleware.Logger())
 
-	// s.orderModules()
+	s.paymentModules()
 
 	close := make(chan os.Signal, 1)
 	signal.Notify(close, syscall.SIGINT, syscall.SIGTERM)
@@ -71,18 +74,17 @@ func (s *server) Start(pctx context.Context) {
 
 }
 
-// func (s *server) orderModules() {
-// 	orderRepo := orderRepositories.NewOrderRepository(s.db)
-// 	orderUseCase := orderUsecases.NewOrderUsecase(orderRepo)
-// 	orderHandler := orderHandlers.NewOrderHandler(orderUseCase)
+func (s *server) paymentModules() {
+	paymentRepo := paymentrepositories.NewPaymentRepository(s.db)
+	paymentUsecase := paymentusecases.NewPaymentUsecase(paymentRepo)
+	paymenthandlers := paymenthandlers.NewPaymenthandler(paymentUsecase)
 
-// 	orderRoute := s.app.Group("/app/v1/orders")
-// 	userRoute := s.app.Group("/app/v1/users")
+	paymentRoute := s.app.Group("/app/v1/payments")
 
-// 	orderRoute.GET("/:id", orderHandler.GetOrder)
-// 	orderRoute.POST("/", orderHandler.CreateOrder)
-// 	orderRoute.PATCH("/:id/status", orderHandler.UpdateStatus)
+	paymentRoute.POST("/", paymenthandlers.CreatePayment)
 
-// 	userRoute.GET("/:user_id/orders", orderHandler.ListOrdersByUser)
+	paymentRoute.GET("/:id", paymenthandlers.GetPayment)
 
-// }
+	paymentRoute.PATCH("/:id", paymenthandlers.UpdatePaymentStatus)
+
+}

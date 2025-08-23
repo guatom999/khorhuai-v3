@@ -7,7 +7,7 @@ import (
 )
 
 type PaymentRepositoryInterface interface {
-	CreateProcessing(ctx context.Context, in modules.CreatePaymentInput) (string, error)
+	CreateProcessing(ctx context.Context, in modules.CreatePaymentRequest) (string, error)
 	UpdateStatus(ctx context.Context, id, status string) error
 	Get(ctx context.Context, id string) (*modules.PaymentRow, error)
 }

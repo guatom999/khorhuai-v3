@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisDb"
+	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisdb"
 	"github.com/guatom999/ecommerce-payment-api/modules"
 	paymentrepositories "github.com/guatom999/ecommerce-payment-api/modules/paymentRepositories"
 )
@@ -33,19 +33,15 @@ func (u *paymentUsecase) CreatePayment(ctx context.Context, cmd modules.CreatePa
 		started, rec, err := u.redis.TryStart(ctx, cmd.IdempotencyKey, 10*time.Minute)
 		if err == nil && !started {
 			if rec != nil && rec.Status == "done" {
-				// คุณอาจแปลง rec.Response → PaymentRow ได้ แต่ในที่นี้ให้ไปอ่าน DB ตาม payment_id จะชัวร์กว่า
 				if pid, ok := rec.Response["id"].(string); ok && pid != "" {
 					return u.paymentRepo.Get(ctx, pid)
 				}
 			}
-			// ยัง processing อยู่
 			return nil, errors.New("request in progress")
 		}
-		// ถ้า Redis error หรือ started=true → ดำเนินการต่อ (soft lock)
 	}
 
-	// --- สร้าง payment (processing)
-	paymentID, err := u.paymentRepo.CreateProcessing(ctx, modules.CreatePaymentInput{
+	paymentID, err := u.paymentRepo.CreateProcessing(ctx, modules.CreatePaymentRequest{
 		OrderID:  cmd.OrderID,
 		UserID:   cmd.UserID,
 		Amount:   cmd.Amount,
@@ -60,7 +56,6 @@ func (u *paymentUsecase) CreatePayment(ctx context.Context, cmd modules.CreatePa
 		return nil, err
 	}
 
-	// --- เก็บผลลัพธ์ลง Redis เพื่อ fast repeat
 	if cmd.IdempotencyKey != "" && u.redis != nil {
 		resp := map[string]any{
 			"id":         p.ID,

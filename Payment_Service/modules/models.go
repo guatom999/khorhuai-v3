@@ -15,9 +15,13 @@ type CreatePaymentCommand struct {
 	IdempotencyKey string
 }
 
-type CreatePaymentInput struct {
-	OrderID  string
-	UserID   string
-	Amount   int64
-	Currency string
+type UpdatePaymentStatusRequest struct {
+	Status string `json:"status" validate:"required"`
 }
+
+// type CreatePaymentInput struct {
+// 	OrderID  string
+// 	UserID   string
+// 	Amount   int64
+// 	Currency string
+// }

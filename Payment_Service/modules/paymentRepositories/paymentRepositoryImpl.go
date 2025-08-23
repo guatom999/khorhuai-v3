@@ -17,7 +17,7 @@ func NewPaymentRepository(db *sqlx.DB) PaymentRepositoryInterface {
 	return &paymentRepository{db: db}
 }
 
-func (r *paymentRepository) CreateProcessing(ctx context.Context, in modules.CreatePaymentInput) (string, error) {
+func (r *paymentRepository) CreateProcessing(ctx context.Context, in modules.CreatePaymentRequest) (string, error) {
 
 	var userPtr *string
 

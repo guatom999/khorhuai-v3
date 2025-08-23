@@ -5,7 +5,7 @@ import (
 
 	"github.com/guatom999/ecommerce-payment-api/config"
 	"github.com/guatom999/ecommerce-payment-api/databases"
-	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisDb"
+	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisdb"
 	"github.com/guatom999/ecommerce-payment-api/server"
 	"github.com/redis/go-redis/v9"
 )
@@ -21,6 +21,7 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: cfg.Redis.Addr,
 	})
+
 	redisDb := redisdb.Store{Rdb: rdb}
 	_ = redisDb
 
