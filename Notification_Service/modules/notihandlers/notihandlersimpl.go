@@ -65,20 +65,22 @@ func (h *notiHandler) List(c echo.Context) error {
 
 	userId := c.QueryParam("user_id")
 	status := c.QueryParam("status")
-	limit := func() int {
-		limit, err := strconv.Atoi(c.QueryParam("limit"))
-		if err != nil {
-			return 20
-		}
-		return limit
-	}()
-	offset := func() int {
-		offset, err := strconv.Atoi(c.QueryParam("offset"))
-		if err != nil {
-			return 0
-		}
-		return offset
-	}()
+	// limit := func() int {
+	// 	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	// 	if err != nil {
+	// 		return 20
+	// 	}
+	// 	return limit
+	// }()
+	// offset := func() int {
+	// 	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	// 	if err != nil {
+	// 		return 0
+	// 	}
+	// 	return offset
+	// }()
+	limit := convertStringToNumber(c.FormValue("limit"), 20)
+	offset := convertStringToNumber(c.FormValue("offset"), 0)
 
 	result, err := h.notiUsecase.List(ctx, userId, status, limit, offset)
 	if err != nil {
@@ -126,4 +128,17 @@ func (h *notiHandler) UpdateStatus(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"message": "updated"})
+}
+
+func convertStringToNumber(input string, def int) int {
+	if input == "" {
+		return def
+	}
+
+	number, err := strconv.Atoi(input)
+	if err == nil {
+		return number
+	}
+
+	return def
 }
