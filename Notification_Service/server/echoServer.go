@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/guatom999/ecommerce-notification-api/config"
+	"github.com/guatom999/ecommerce-notification-api/modules/notihandlers"
+	"github.com/guatom999/ecommerce-notification-api/modules/notirepositories"
+	"github.com/guatom999/ecommerce-notification-api/modules/notiusecases"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -59,7 +62,7 @@ func (s *server) Start(pctx context.Context) {
 
 	s.app.Use(middleware.Logger())
 
-	// s.paymentModules()
+	s.notificationModules()
 
 	close := make(chan os.Signal, 1)
 	signal.Notify(close, syscall.SIGINT, syscall.SIGTERM)
@@ -71,17 +74,19 @@ func (s *server) Start(pctx context.Context) {
 
 }
 
-// func (s *server) paymentModules() {
-// 	paymentRepo := paymentrepositories.NewPaymentRepository(s.db)
-// 	paymentUsecase := paymentusecases.NewPaymentUsecase(paymentRepo)
-// 	paymenthandlers := paymenthandlers.NewPaymenthandler(paymentUsecase)
+func (s *server) notificationModules() {
+	notiRepo := notirepositories.NewNotirepository(s.db)
+	notiUsecase := notiusecases.NewNotiUsecase(notiRepo)
+	notihandlers := notihandlers.NewNotiHandler(notiUsecase)
 
-// 	paymentRoute := s.app.Group("/app/v1/payments")
+	notiRoute := s.app.Group("/app/v1/notification")
 
-// 	paymentRoute.POST("/", paymenthandlers.CreatePayment)
+	notiRoute.POST("/", notihandlers.Create)
+	notiRoute.GET("/:id", notihandlers.Get)
+	notiRoute.GET("/", notihandlers.List)
 
-// 	paymentRoute.GET("/:id", paymenthandlers.GetPayment)
+	notiRoute.POST("/:id/send", notihandlers.AttemptSend)
 
-// 	paymentRoute.PATCH("/:id", paymenthandlers.UpdatePaymentStatus)
+	notiRoute.PATCH("/:id", notihandlers.UpdateStatus)
 
-// }
+}
