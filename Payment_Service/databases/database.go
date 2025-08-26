@@ -26,6 +26,9 @@ func ConnDB(cfg *config.Config) *sqlx.DB {
 		panic(err)
 	}
 
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+
 	return db
 
 }

@@ -8,7 +8,7 @@ import (
 
 	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisdb"
 	"github.com/guatom999/ecommerce-payment-api/modules"
-	paymentrepositories "github.com/guatom999/ecommerce-payment-api/modules/paymentRepositories"
+	"github.com/guatom999/ecommerce-payment-api/modules/paymentrepositories"
 )
 
 type (
@@ -76,5 +76,5 @@ func (u *paymentUsecase) GetPayment(ctx context.Context, id string) (*modules.Pa
 	return u.paymentRepo.Get(ctx, id)
 }
 func (u *paymentUsecase) UpdateStatus(ctx context.Context, id, status string) error {
-	return u.paymentRepo.UpdateStatus(ctx, id, status)
+	return u.paymentRepo.UpdateStatusWithOutbox(ctx, id, status)
 }

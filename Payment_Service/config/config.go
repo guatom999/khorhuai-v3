@@ -10,10 +10,12 @@ import (
 
 type (
 	Config struct {
-		App   App
-		Db    Db
-		Redis Redis
-		JWT   JWT
+		App    App
+		Db     Db
+		Redis  Redis
+		JWT    JWT
+		Kafka  Kafka
+		Outbox Outbox
 	}
 
 	App struct {
@@ -30,6 +32,16 @@ type (
 
 	Redis struct {
 		Addr string
+	}
+
+	Kafka struct {
+		Brokers string
+	}
+
+	Outbox struct {
+		Batch    int
+		Interval string
+		MaxRetry int
 	}
 
 	JWT struct {
@@ -58,6 +70,28 @@ func NewConfig() *Config {
 		},
 		Redis: Redis{
 			Addr: os.Getenv("REDIS_ADDR"),
+		},
+		Kafka: Kafka{
+			Brokers: os.Getenv("KAFKA_BROKERS"),
+		},
+		Outbox: Outbox{
+			Batch: func() int {
+				duration, err := strconv.ParseInt(os.Getenv("OUTBOX_BATCH"), 10, 64)
+				if err != nil {
+					log.Fatalf("Error getting OUTBOX_BATCH: %v", err)
+				}
+				return int(duration)
+
+			}(),
+			Interval: os.Getenv("OUTBOX_INTERVAL"),
+			MaxRetry: func() int {
+				duration, err := strconv.ParseInt(os.Getenv("OUTBOX_MAX_RETRY"), 10, 64)
+				if err != nil {
+					log.Fatalf("Error getting OUTBOX_MAX_RETRY: %v", err)
+				}
+				return int(duration)
+
+			}(),
 		},
 		JWT: JWT{
 			SecretKey: os.Getenv("JWT_SECRET_KEY"),

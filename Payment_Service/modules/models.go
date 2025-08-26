@@ -1,5 +1,7 @@
 package modules
 
+import "time"
+
 type CreatePaymentRequest struct {
 	OrderID  string `json:"order_id" validate:"required,uuid4"`
 	UserID   string `json:"user_id,omitempty"`
@@ -17,6 +19,13 @@ type CreatePaymentCommand struct {
 
 type UpdatePaymentStatusRequest struct {
 	Status string `json:"status" validate:"required"`
+}
+
+type PaymentStatusChanged struct {
+	EventType  string    `json:"event_type"`
+	PaymentID  string    `json:"payment_id"`
+	NewStatus  string    `json:"new_status"`
+	OccurredAt time.Time `json:"occurred_at"`
 }
 
 // type CreatePaymentInput struct {

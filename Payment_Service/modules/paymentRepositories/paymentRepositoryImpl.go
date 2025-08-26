@@ -2,6 +2,11 @@ package paymentrepositories
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"log"
+	"time"
 
 	"github.com/guatom999/ecommerce-payment-api/modules"
 	"github.com/jmoiron/sqlx"
@@ -65,4 +70,56 @@ func (r *paymentRepository) Get(ctx context.Context, id string) (*modules.Paymen
 		return nil, err
 	}
 	return p, nil
+}
+
+func (r *paymentRepository) UpdateStatusWithOutbox(ctx context.Context, id, newStatus string) error {
+
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	res, err := tx.ExecContext(ctx, `
+	  UPDATE payments
+	  SET status=$2, updated_at=CURRENT_TIMESTAMP
+	  WHERE id=$1
+	`, id, newStatus,
+	)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return errors.New("payment not found")
+	}
+
+	payload := modules.PaymentStatusChanged{
+		EventType:  "payment.status.changed",
+		PaymentID:  id,
+		NewStatus:  newStatus,
+		OccurredAt: time.Now(),
+	}
+	b, _ := json.Marshal(payload)
+
+	if _, err = r.db.ExecContext(ctx, `
+		INSERT INTO outbox_events (aggregate_type, aggregate_id, topic, key, payload, status)
+	    VALUES ($1, $2::uuid, $3, $4, $5, 'pending')
+	`,
+		"payment", id, "payment.events", id, b,
+	); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("Error: failed to commit sql %v", err.Error())
+		return err
+	}
+
+	return nil
 }
