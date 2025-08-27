@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/guatom999/ecommerce-payment-api/config"
-	paymenthandlers "github.com/guatom999/ecommerce-payment-api/modules/paymentHandlers"
-	paymentrepositories "github.com/guatom999/ecommerce-payment-api/modules/paymentRepositories"
-	paymentusecases "github.com/guatom999/ecommerce-payment-api/modules/paymentUseCases"
+	"github.com/guatom999/ecommerce-payment-api/modules/paymenthandlers"
+	"github.com/guatom999/ecommerce-payment-api/modules/paymentrepositories"
+	paymentusecases "github.com/guatom999/ecommerce-payment-api/modules/paymentusecases"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
