@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	redisdb "github.com/guatom999/ecommerce-payment-api/databases/redisdb"
+	"github.com/guatom999/ecommerce-payment-api/databases/redisdb"
 	"github.com/guatom999/ecommerce-payment-api/modules"
 	"github.com/guatom999/ecommerce-payment-api/modules/paymentrepositories"
 )
@@ -18,9 +18,10 @@ type (
 	}
 )
 
-func NewPaymentUsecase(paymentRepo paymentrepositories.PaymentRepositoryInterface) PaymentUsecaseInterface {
+func NewPaymentUsecase(paymentRepo paymentrepositories.PaymentRepositoryInterface, redis *redisdb.Store) PaymentUsecaseInterface {
 	return &paymentUsecase{
 		paymentRepo: paymentRepo,
+		redis:       redis,
 	}
 }
 

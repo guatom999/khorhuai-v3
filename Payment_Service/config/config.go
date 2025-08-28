@@ -16,6 +16,7 @@ type (
 		JWT    JWT
 		Kafka  Kafka
 		Outbox Outbox
+		Otel   Otel
 	}
 
 	App struct {
@@ -44,6 +45,11 @@ type (
 		MaxRetry int
 	}
 
+	Otel struct {
+		ServiceName string
+		Endpoint    string
+	}
+
 	JWT struct {
 		SecretKey            string
 		AccessTokenDuration  int64
@@ -51,10 +57,31 @@ type (
 	}
 )
 
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
+}
+
 func NewConfig() *Config {
 
-	if err := godotenv.Load("./env/.env"); err != nil {
-		log.Fatalf("Error loading .env file")
+	inContainer := os.Getenv("DOCKERIZED") == "true" || fileExists("/.dockerenv")
+
+	var candidates []string
+	if inContainer {
+		candidates = append(candidates,
+			"/app/.env",     // ถ้าเลือก mount มาที่นี่
+			"/etc/env/.env", // หรือที่นี่
+			"/env/.env",     // หรือที่นี่
+		)
+	}
+	// path ที่ใช้ตอนรัน local
+	candidates = append(candidates,
+		"./env/.env",
+		".env",
+	)
+
+	if err := godotenv.Load("/env/.env"); err != nil {
+		log.Fatalf("Error loading .env file %v", err.Error())
 	}
 
 	return &Config{
@@ -92,6 +119,10 @@ func NewConfig() *Config {
 				return int(duration)
 
 			}(),
+		},
+		Otel: Otel{
+			ServiceName: os.Getenv("APP_NAME"),
+			Endpoint:    os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
 		},
 		JWT: JWT{
 			SecretKey: os.Getenv("JWT_SECRET_KEY"),

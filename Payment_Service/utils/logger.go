@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"os"
 
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -49,13 +48,13 @@ func ShutdownLogger() {
 	}
 }
 
-func SetLevelFromEnv() {
-	lvl := os.Getenv("LOG_LEVEL")
-	if lvl == "" || logger == nil {
-		return
-	}
-	var level zapcore.Level
-	if err := level.Set(lvl); err == nil {
-		_ = zap.ReplaceGlobals(logger.WithOptions(zap.IncreaseLevel(level)))
-	}
-}
+// func SetLevelFromEnv() {
+// 	lvl := os.Getenv("LOG_LEVEL")
+// 	if lvl == "" || logger == nil {
+// 		return
+// 	}
+// 	var level zapcore.Level
+// 	if err := level.Set(lvl); err == nil {
+// 		_ = zap.ReplaceGlobals(logger.WithOptions(zap.IncreaseLevel(level)))
+// 	}
+// }

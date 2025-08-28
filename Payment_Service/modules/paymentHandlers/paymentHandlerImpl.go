@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/guatom999/ecommerce-payment-api/modules"
-	paymentusecases "github.com/guatom999/ecommerce-payment-api/modules/paymentUseCases"
+	"github.com/guatom999/ecommerce-payment-api/modules/paymentusecases"
 	"github.com/guatom999/ecommerce-payment-api/request"
 	"github.com/labstack/echo/v4"
 )

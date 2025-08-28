@@ -20,9 +20,9 @@ type OtelConfig struct {
 	SampleRatio float64
 }
 
-func InitTracing(ctx context.Context, cfg OtelConfig) (OtelShutdown, error) {
+func InitTracing(ctx context.Context, otelCfg OtelConfig) (OtelShutdown, error) {
 	exp, err := otlptracehttp.New(ctx,
-		otlptracehttp.WithEndpoint(cfg.Endpoint),
+		otlptracehttp.WithEndpoint(otelCfg.Endpoint),
 		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
@@ -32,7 +32,7 @@ func InitTracing(ctx context.Context, cfg OtelConfig) (OtelShutdown, error) {
 
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
-			semconv.ServiceName(cfg.ServiceName),
+			semconv.ServiceName(otelCfg.ServiceName),
 			attribute.String("env", "dev"),
 		),
 	)
@@ -41,7 +41,7 @@ func InitTracing(ctx context.Context, cfg OtelConfig) (OtelShutdown, error) {
 		return nil, err
 	}
 
-	sampler := sdktrace.ParentBased(sdktrace.TraceIDRatioBased(cfg.SampleRatio))
+	sampler := sdktrace.ParentBased(sdktrace.TraceIDRatioBased(otelCfg.SampleRatio))
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exp),
 		sdktrace.WithResource(res),

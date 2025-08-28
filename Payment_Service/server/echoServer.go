@@ -3,33 +3,40 @@ package server
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/guatom999/ecommerce-payment-api/config"
+	"github.com/guatom999/ecommerce-payment-api/databases/redisdb"
 	"github.com/guatom999/ecommerce-payment-api/modules/paymenthandlers"
 	"github.com/guatom999/ecommerce-payment-api/modules/paymentrepositories"
-	paymentusecases "github.com/guatom999/ecommerce-payment-api/modules/paymentusecases"
+	"github.com/guatom999/ecommerce-payment-api/modules/paymentusecases"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+
+	echoprom "github.com/labstack/echo-contrib/prometheus"
 )
 
 type (
 	server struct {
-		app *echo.Echo
-		db  *sqlx.DB
-		cfg *config.Config
+		app     *echo.Echo
+		db      *sqlx.DB
+		cfg     *config.Config
+		redisDb *redisdb.Store
 	}
 )
 
-func NewEchoServer(cfg *config.Config, db *sqlx.DB) *server {
+func NewEchoServer(cfg *config.Config, db *sqlx.DB, redisDb *redisdb.Store) *server {
 	return &server{
-		app: echo.New(),
-		cfg: cfg,
-		db:  db,
+		app:     echo.New(),
+		cfg:     cfg,
+		db:      db,
+		redisDb: redisDb,
 	}
 }
 
@@ -62,6 +69,14 @@ func (s *server) Start(pctx context.Context) {
 
 	s.app.Use(middleware.Logger())
 
+	s.app.Use(otelecho.Middleware("payment-api"))
+
+	echoPrometheus := echoprom.NewPrometheus("payment_api", middleware.DefaultSkipper)
+
+	// _ = echoPrometheus
+
+	echoPrometheus.Use(s.app)
+
 	s.paymentModules()
 
 	close := make(chan os.Signal, 1)
@@ -76,10 +91,14 @@ func (s *server) Start(pctx context.Context) {
 
 func (s *server) paymentModules() {
 	paymentRepo := paymentrepositories.NewPaymentRepository(s.db)
-	paymentUsecase := paymentusecases.NewPaymentUsecase(paymentRepo)
+	paymentUsecase := paymentusecases.NewPaymentUsecase(paymentRepo, s.redisDb)
 	paymenthandlers := paymenthandlers.NewPaymenthandler(paymentUsecase)
 
 	paymentRoute := s.app.Group("/app/v1/payments")
+
+	paymentRoute.GET("/health", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "ok")
+	})
 
 	paymentRoute.POST("/", paymenthandlers.CreatePayment)
 
