@@ -69,9 +69,9 @@ func NewConfig() *Config {
 	var candidates []string
 	if inContainer {
 		candidates = append(candidates,
-			"/app/.env",     // ถ้าเลือก mount มาที่นี่
-			"/etc/env/.env", // หรือที่นี่
-			"/env/.env",     // หรือที่นี่
+			"/env/.env",     // Docker volume mount path
+			"/etc/env/.env", // Alternative Docker mount path
+			"/app/.env",     // App directory path
 		)
 	}
 	// path ที่ใช้ตอนรัน local
@@ -80,8 +80,19 @@ func NewConfig() *Config {
 		".env",
 	)
 
-	if err := godotenv.Load("/env/.env"); err != nil {
-		log.Fatalf("Error loading .env file %v", err.Error())
+	var err error
+	for _, candidate := range candidates {
+		if fileExists(candidate) {
+			err = godotenv.Load(candidate)
+			if err == nil {
+				log.Printf("Successfully loaded .env from: %s", candidate)
+				break
+			}
+		}
+	}
+
+	if err != nil {
+		log.Fatalf("Error loading .env file from any candidate paths: %v", err.Error())
 	}
 
 	return &Config{
