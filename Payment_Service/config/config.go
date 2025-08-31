@@ -64,35 +64,35 @@ func fileExists(p string) bool {
 
 func NewConfig() *Config {
 
-	inContainer := os.Getenv("DOCKERIZED") == "true" || fileExists("/.dockerenv")
+	// inContainer := os.Getenv("DOCKERIZED") == "true" || fileExists("/.dockerenv")
 
-	var candidates []string
-	if inContainer {
-		candidates = append(candidates,
-			"/env/.env",     // Docker volume mount path
-			"/etc/env/.env", // Alternative Docker mount path
-			"/app/.env",     // App directory path
-		)
-	}
-	// path ที่ใช้ตอนรัน local
-	candidates = append(candidates,
-		"./env/.env",
-		".env",
-	)
+	// var candidates []string
+	// if inContainer {
+	// 	candidates = append(candidates,
+	// 		"/env/.env",     // Docker volume mount path
+	// 		"/etc/env/.env", // Alternative Docker mount path
+	// 		"/app/.env",     // App directory path
+	// 	)
+	// }
+	// // path ที่ใช้ตอนรัน local
+	// candidates = append(candidates,
+	// 	"./env/.env",
+	// 	".env",
+	// )
 
-	var err error
-	for _, candidate := range candidates {
-		if fileExists(candidate) {
-			err = godotenv.Load(candidate)
-			if err == nil {
-				log.Printf("Successfully loaded .env from: %s", candidate)
-				break
-			}
-		}
-	}
+	// var err error
+	// for _, candidate := range candidates {
+	// 	if fileExists(candidate) {
+	// 		err = godotenv.Load(candidate)
+	// 		if err == nil {
+	// 			log.Printf("Successfully loaded .env from: %s", candidate)
+	// 			break
+	// 		}
+	// 	}
+	// }
 
-	if err != nil {
-		log.Fatalf("Error loading .env file from any candidate paths: %v", err.Error())
+	if err := godotenv.Load("./env/.env"); err != nil {
+		log.Fatalf("Error loading .env file")
 	}
 
 	return &Config{

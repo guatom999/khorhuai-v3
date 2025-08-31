@@ -10,9 +10,10 @@ import (
 
 type (
 	Config struct {
-		App App
-		Db  Db
-		JWT JWT
+		App    App
+		Db     Db
+		JWT    JWT
+		Expire Expire
 	}
 
 	App struct {
@@ -25,6 +26,10 @@ type (
 		User     string
 		Password string
 		DBName   string
+	}
+	Expire struct {
+		Interval int64
+		Batch    int64
 	}
 
 	JWT struct {
@@ -50,6 +55,24 @@ func NewConfig() *Config {
 			User:     os.Getenv("DB_USER"),
 			Password: os.Getenv("DB_PASSWORD"),
 			DBName:   os.Getenv("DB_NAME"),
+		},
+		Expire: Expire{
+			Interval: func() int64 {
+				interval, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_INTERVAL"), 10, 64)
+				if err != nil {
+					log.Fatalf("Error getting EXPIRE_SWEEP_INTERVAL: %v", err)
+				}
+				return interval
+
+			}(),
+			Batch: func() int64 {
+				batch, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_BATCH"), 10, 64)
+				if err != nil {
+					log.Fatalf("Error getting EXPIRE_SWEEP_BATCH: %v", err)
+				}
+				return batch
+
+			}(),
 		},
 		JWT: JWT{
 			SecretKey: os.Getenv("JWT_SECRET_KEY"),
