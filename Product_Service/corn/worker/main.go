@@ -20,14 +20,16 @@ type (
 func main() {
 	ctx := context.Background()
 
-	cfg := config.NewConfig()
+	cfg := config.NewWorkerConfig()
 
 	db := databases.ConnDB(cfg)
 	defer db.Close()
 
 	log.Printf("stock-expirer started: interval=%v batch=%d", cfg.Expire.Interval, cfg.Expire.Batch)
 
-	ticker := time.NewTicker(time.Duration(cfg.Expire.Interval))
+	interval := cfg.Expire.Interval * int64(time.Second)
+
+	ticker := time.NewTicker(time.Duration(interval))
 	defer ticker.Stop()
 
 	for {
