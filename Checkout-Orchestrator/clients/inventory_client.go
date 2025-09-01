@@ -36,7 +36,7 @@ func (h *InventoryClient) Reserve(ctx context.Context, orderId string, ttl int, 
 			"ttl_seconds": ttl,
 			"items":       items,
 		},
-	).SetResult(rsvOut).Post(h.baseUrl + "/stock/reserve"); err != nil {
+	).SetResult(rsvOut).Post(h.baseUrl + "/app/v1/stock/reserve"); err != nil {
 		return "", err
 	}
 
@@ -49,7 +49,7 @@ func (h *InventoryClient) Release(ctx context.Context, reservationId string) err
 		map[string]any{
 			"reservation_id": reservationId,
 		},
-	).Post(h.baseUrl + "/stock/release"); err != nil {
+	).Post(h.baseUrl + "/app/v1/stock/release"); err != nil {
 		return err
 	}
 
@@ -59,6 +59,6 @@ func (h *InventoryClient) Release(ctx context.Context, reservationId string) err
 func (h *InventoryClient) Commit(ctx context.Context, reservationId string) error {
 	_, err := h.http.R().SetContext(ctx).
 		SetBody(map[string]string{"reservation_id": reservationId}).
-		Post(h.baseUrl + "/stock/commit")
+		Post(h.baseUrl + "/app/v1/stock/commit")
 	return err
 }
