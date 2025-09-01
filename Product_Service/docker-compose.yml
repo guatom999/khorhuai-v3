@@ -10,3 +10,13 @@ services:
       POSTGRES_PASSWORD: test1234
     ports:
       - 5438:5432
+
+  inventory_expirer:
+    image: badzboss/ecommerce-product-inventory-api:latest
+    container_name: inventory_expirer
+    entrypoint: ["/app/worker"]
+
+  inventory_api:
+    image: badzboss/ecommerce-product-inventory-api:latest
+    container_name: inventory_api
+    entrypoint: ["/app/inventory-api"]

@@ -16,8 +16,6 @@ func main() {
 
 	db := databases.ConnDB(cfg)
 
-	_ = db
-
 	server.NewEchoServer(cfg, db).Start(ctx)
 
 }

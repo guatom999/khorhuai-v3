@@ -28,7 +28,7 @@ type (
 		DBName   string
 	}
 	Expire struct {
-		Interval int64
+		Interval string
 		Batch    int64
 	}
 
@@ -57,14 +57,15 @@ func NewConfig() *Config {
 			DBName:   os.Getenv("DB_NAME"),
 		},
 		Expire: Expire{
-			Interval: func() int64 {
-				interval, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_INTERVAL"), 10, 64)
-				if err != nil {
-					log.Fatalf("Error getting EXPIRE_SWEEP_INTERVAL: %v", err)
-				}
-				return interval
+			// Interval: func() int64 {
+			// 	interval, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_INTERVAL"), 10, 64)
+			// 	if err != nil {
+			// 		log.Fatalf("Error getting EXPIRE_SWEEP_INTERVAL: %v", err)
+			// 	}
+			// 	return interval
 
-			}(),
+			// }(),
+			Interval: os.Getenv("EXPIRE_SWEEP_INTERVAL"),
 			Batch: func() int64 {
 				batch, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_BATCH"), 10, 64)
 				if err != nil {
@@ -114,14 +115,15 @@ func NewWorkerConfig() *Config {
 			DBName:   os.Getenv("DB_NAME"),
 		},
 		Expire: Expire{
-			Interval: func() int64 {
-				interval, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_INTERVAL"), 10, 64)
-				if err != nil {
-					log.Fatalf("Error getting EXPIRE_SWEEP_INTERVAL: %v", err)
-				}
-				return interval
+			// Interval: func() int64 {
+			// 	interval, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_INTERVAL"), 10, 64)
+			// 	if err != nil {
+			// 		log.Fatalf("Error getting EXPIRE_SWEEP_INTERVAL: %v", err)
+			// 	}
+			// 	return interval
 
-			}(),
+			// }(),
+			Interval: os.Getenv("EXPIRE_SWEEP_INTERVAL"),
 			Batch: func() int64 {
 				batch, err := strconv.ParseInt(os.Getenv("EXPIRE_SWEEP_BATCH"), 10, 64)
 				if err != nil {

@@ -27,9 +27,17 @@ func main() {
 
 	log.Printf("stock-expirer started: interval=%v batch=%d", cfg.Expire.Interval, cfg.Expire.Batch)
 
-	interval := cfg.Expire.Interval * int64(time.Second)
+	// interval := cfg.Expire.Interval
+	interval := func(v string, d time.Duration) time.Duration {
+		if cfg.Expire.Interval != "" {
+			if dur, err := time.ParseDuration(cfg.Expire.Interval); err == nil {
+				return dur
+			}
+		}
+		return d
+	}(cfg.Expire.Interval, 10*time.Second)
 
-	ticker := time.NewTicker(time.Duration(interval))
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
@@ -42,6 +50,7 @@ func main() {
 }
 
 func sweepOnce(ctx context.Context, db *sqlx.DB, batch int) error {
+	log.Println("sweep once:")
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
