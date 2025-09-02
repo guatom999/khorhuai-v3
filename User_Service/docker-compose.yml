@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  user-service:
+    container_name: user-service
+    build: .
+    environment:
+      - ENV_PATH=/app/env/.env
+    ports:
+      - "5000:5000"
+    networks:
+      - user_network
+    depends_on:
+      - user-db
+
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_DB=workshop_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - user_network
+
+volumes:
+  pgdata:
+
+networks:
+  user_network:
+    driver: bridge

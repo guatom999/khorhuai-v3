@@ -36,8 +36,12 @@ type (
 
 func NewConfig() *Config {
 
-	if err := godotenv.Load("./env/.env"); err != nil {
-		log.Fatalf("Error loading .env file")
+	envPath := os.Getenv("ENV_PATH")
+	if envPath == "" {
+		envPath = "./env/.env" // default สำหรับ local
+	}
+	if err := godotenv.Load(envPath); err != nil {
+		log.Fatalf("Error loading .env file from %s", envPath)
 	}
 
 	return &Config{
