@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  shopping-cart-service:
+    container_name: shopping-cart-service
+    build: .
+    environment:
+      - ENV_PATH=/app/env/.env
+    ports:
+      - "8082:8082"
+    networks:
+      - shopping_cart_network
+    depends_on:
+      - shopping-cart-db
+
+  shopping-cart-db:
+    container_name: shopping-cart-db
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_DB=workshop_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - shopping_cart_network
+
+volumes:
+  pgdata:
+
+networks:
+  shopping_cart_network:
+    driver: bridge
