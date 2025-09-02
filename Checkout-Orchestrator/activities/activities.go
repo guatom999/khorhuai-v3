@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"github.com/guatom999/ecommerce-orchestrator/clients"
+	"github.com/guatom999/ecommerce-orchestrator/config"
 	"github.com/guatom999/ecommerce-orchestrator/workflows"
 )
 
 type (
-	Config struct {
-		InventoryBaseUrl string
-		OrderBaseUrl     string
-		PaymentBaseUrl   string
-	}
+	// Config struct {
+	// 	InventoryBaseUrl string
+	// 	OrderBaseUrl     string
+	// 	PaymentBaseUrl   string
+	// }
 
 	Activities struct {
 		Inventory *clients.InventoryClient
@@ -20,6 +21,14 @@ type (
 		Payment   *clients.PaymentClient
 	}
 )
+
+func NewActitivities(cfg *config.Config) *Activities {
+	return &Activities{
+		Inventory: clients.NewInventoryClient(cfg.InventoryBaseURL),
+		Order:     clients.NewOrderClient(cfg.OrderBaseURL),
+		Payment:   clients.NewPaymentClient(cfg.PaymentBaseURL),
+	}
+}
 
 func (a *Activities) ReserveStock(ctx context.Context, orderId string, items []workflows.Item, ttl int) (string, error) {
 
@@ -61,7 +70,7 @@ func (a *Activities) ConfirmOrder(ctx context.Context, orderId string) error {
 	return a.Order.Confirm(ctx, orderId)
 }
 
-func (a *Activities) CalcelOrder(ctx context.Context, orderId string) error {
+func (a *Activities) CancelOrder(ctx context.Context, orderId string) error {
 	return a.Order.Cancel(ctx, orderId)
 }
 
