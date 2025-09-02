@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "payment-api"
+    static_configs:
+      - targets: ["payment-api:8082"]
+
+  - job_name: "outboxrelay"
+    static_configs:
+      - targets: ["outboxrelay:2112"]

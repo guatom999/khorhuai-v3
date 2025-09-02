@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  payment-api:
+    image: badzboss/ecommerce-payment-api:latest
+    container_name: payment-api-for-test
+    volumes:
+      - ./env/.env:/etc/env/.env
