@@ -1,21 +1,21 @@
 version: "3.8"
 
 services:
-  user-service:
-    container_name: user-service
+  order-services:
+    container_name: order-services
     build: .
     environment:
       - ENV_PATH=/app/env/.env
     ports:
-      - "8080:8080"
+      - "8081:8081"
     networks:
-      - user_network
+      - order_network
     depends_on:
-      - user-db
+      - order-db
 
-  user-db:
+  order-db:
     image: postgres:16
-    container_name: user-db
+    container_name: order-db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test1234
@@ -25,11 +25,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - user_network
+      - order_network
 
 volumes:
   pgdata:
 
 networks:
-  user_network:
+  order_network:
     driver: bridge
