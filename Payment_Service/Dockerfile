@@ -12,5 +12,6 @@ FROM gcr.io/distroless/base-debian12
 WORKDIR /app
 COPY --from=build /out/payment-api /app/payment-api
 COPY --from=build /out/outboxrelay /app/outboxrelay
+COPY ./env ./env
 USER 65532:65532
 ENTRYPOINT ["/app/payment-api"]

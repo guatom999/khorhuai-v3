@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  postgres:
+  product_db:
     image: postgres:16
-    container_name: product_service_db
+    container_name: product_db
     environment:
       POSTGRES_DB: product_db
       POSTGRES_USER: postgres
@@ -16,14 +16,28 @@ services:
       - product_network
 
   inventory_expirer:
-    image: badzboss/ecommerce-product-inventory-api:latest
+    build: .
     container_name: inventory_expirer
     entrypoint: ["/app/worker"]
+    environment:
+      - ENV_PATH=/app/env/.env
+    depends_on:
+      - product_db
+    networks:
+      - product_network
 
   inventory_api:
-    image: badzboss/ecommerce-product-inventory-api:latest
+    build: .
     container_name: inventory_api
     entrypoint: ["/app/inventory-api"]
+    environment:
+      - ENV_PATH=/app/env/.env
+    ports:
+      - 8083:8083
+    depends_on:
+      - product_db
+    networks:
+      - product_network
 
 volumes:
   pgdata:

@@ -15,3 +15,4 @@ FROM gcr.io/distroless/base-debian12
 WORKDIR /app
 COPY --from=build /out/inventory-api /app/inventory-api
 COPY --from=build /out/worker        /app/worker 
+COPY ./env ./env
