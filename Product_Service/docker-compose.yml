@@ -2,14 +2,18 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: product_service_db
     environment:
       POSTGRES_DB: product_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test1234
     ports:
-      - 5438:5432
+      - 5435:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - product_network
 
   inventory_expirer:
     image: badzboss/ecommerce-product-inventory-api:latest
@@ -20,3 +24,10 @@ services:
     image: badzboss/ecommerce-product-inventory-api:latest
     container_name: inventory_api
     entrypoint: ["/app/inventory-api"]
+
+volumes:
+  pgdata:
+
+networks:
+  product_network:
+    driver: bridge
