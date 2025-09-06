@@ -36,4 +36,9 @@ func main() {
 	w.RegisterActivity(acts.ConfirmOrder)
 	w.RegisterActivity(acts.CreatePayment)
 
+	err = w.Run(worker.InterruptCh())
+	if err != nil {
+		log.Fatalf("worker failed: %v", err)
+	}
+
 }
