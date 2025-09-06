@@ -1,13 +1,25 @@
 version: "3.8"
 
 services:
-  # checkout-orchestrator:
-  #   build: .
-  #   container_name: orchestrator
-  #   ports:
-  #     - "5000:5000"
-  #   networks:
-  #     - temporal-network
+  checkout-worker:
+    build: .
+    container_name: checkout-worker
+    command: ["/app/checkout-worker"]
+    environment:
+      - ENV_PATH=/app/env/.env
+    networks:
+      - temporal-network
+
+  checkout-api:
+    build: .
+    container_name: checkout-api
+    command: ["/app/checkout-api"]
+    environment:
+      - ENV_PATH=/app/env/.env
+    ports:
+      - "8090:8090"
+    networks:
+      - temporal-network
 
   temporal:
     image: temporalio/auto-setup:1.24
@@ -17,11 +29,13 @@ services:
     environment:
       - DB=postgres12
       - DB_PORT=5432
-      - POSTGRES_DB=temporal_db
+      - DBNAME=temporal_db
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_PWD=test1234
       - POSTGRES_SEEDS=temporal-db
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      # - DYNAMIC_CONFIG_FILE_PATH=/etc/temporal/dynamicconfig.yaml
+    # volumes:
+    #   - ./config/dynamicconfig/development.yaml:/etc/temporal/dynamicconfig.yaml
     depends_on:
       - temporal-db
     networks:
@@ -31,9 +45,9 @@ services:
     image: postgres:12
     container_name: temporal-db
     environment:
-      POSTGRES_DB: temporal_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: test1234
+      - POSTGRES_DB=temporal_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
     ports:
       - "5440:5432"
     networks:
@@ -43,14 +57,20 @@ services:
     image: temporalio/ui:2.27.0
     container_name: temporal-ui
     ports:
-      - "8088:8080" # Temporal Web UI
+      - "8088:8080"
     environment:
-      - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+      - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_UI_PORT=8080
+      - TEMPORAL_DEFAULT_NAMESPACE=default
+    volumes:
+      - temporal_pgdata:/var/lib/postgresql/data
     depends_on:
       - temporal
     networks:
       - temporal-network
+
+volumes:
+  temporal_pgdata:
 
 networks:
   temporal-network:

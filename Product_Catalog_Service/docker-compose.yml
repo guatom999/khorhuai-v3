@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  product_service:
+    build:
+      context: .
+    container_name: product_service
+    ports:
+      - "8089:8000"
+    environment:
+      - ENV_PATH=/app/env/.env
+    depends_on:
+      - product-service-db
+    networks:
+      - product_service_network
+
+  product-service-db:
+    image: postgres:16
+    container_name: product-service-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test1234
+      - POSTGRES_DB=productdb
+    ports:
+      - "5441:5432"
+    volumes:
+      - product_service_pgdata:/var/lib/postgresql/data
+    networks:
+      - product_service_network
+
+networks:
+  product_service_network:
+    driver: bridge
+
+volumes:
+  product_service_pgdata:
