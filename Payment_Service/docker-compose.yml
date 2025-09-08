@@ -49,7 +49,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     ports:
-      - 8090:8080
+      - 8102:8080
     depends_on:
       - kafka
     networks:
@@ -93,11 +93,11 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector:0.99.0
     container_name: otel-collector
-    command: ["--config=/etc/otel-collector.yaml"]
+    command: ["--config=/etc/otel-collector.yml"]
     volumes:
-      - ./otel-collector.yaml:/etc/otel-collector.yaml:ro
+      - ./otel-collector.yml:/etc/otel-collector.yml
     ports:
-      - 4318:4318 # OTLP/HTTP ingest
+      - 4318:4318
     depends_on:
       - jaeger
     networks:
@@ -150,7 +150,7 @@ services:
     #   KAFKA_BROKERS: kafka:9092
     #   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
     ports:
-      - 8085:8082
+      - 8084:8084
     depends_on:
       postgres:
         condition: service_healthy

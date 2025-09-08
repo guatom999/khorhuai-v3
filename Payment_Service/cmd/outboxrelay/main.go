@@ -115,8 +115,6 @@ func main() {
 	}
 }
 
-// ---------- DB helpers ----------
-
 func fetchPending(ctx context.Context, db *sqlx.DB, limit int) ([]OutboxRow, error) {
 	rows := []OutboxRow{}
 	err := db.SelectContext(ctx, &rows, `

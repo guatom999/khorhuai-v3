@@ -104,6 +104,6 @@ func (s *server) paymentModules() {
 
 	paymentRoute.GET("/:id", paymenthandlers.GetPayment)
 
-	paymentRoute.PATCH("/:id", paymenthandlers.UpdatePaymentStatus)
+	paymentRoute.PATCH("/:id/status", paymenthandlers.UpdatePaymentStatus)
 
 }
