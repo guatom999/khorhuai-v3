@@ -4,17 +4,13 @@ receivers:
       http:
 
 exporters:
-  jaeger:
-    endpoint: http://jaeger:14268/api/traces
+  otlp:
+    endpoint: jaeger:4318
     tls:
       insecure: true
-
-processors:
-  batch: {}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [jaeger]
+      exporters: [otlp]
