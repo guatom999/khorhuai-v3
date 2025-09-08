@@ -11,6 +11,8 @@ import (
 type (
 	Item struct {
 		ProductID string `json:"product_id"`
+		Title     string `json:"title"`
+		UnitPrice int    `json:"unit_price"`
 		Quantity  int    `json:"quantity"`
 	}
 
@@ -44,18 +46,18 @@ func CheckoutWorkflow(ctx workflow.Context, in CheckoutInput) (string, error) {
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
 	var reservationId string
-	if err := workflow.ExecuteActivity(ctx, "Activities.ReserveStock", in.OrderID, in.Items, in.TTLSeconds).Get(ctx, &reservationId); err != nil {
+	if err := workflow.ExecuteActivity(ctx, "ReserveStock", in.OrderID, in.UserID, in.Items, in.TTLSeconds).Get(ctx, &reservationId); err != nil {
 		return "", fmt.Errorf("reserve stock: %w", err)
 	}
-	defer workflow.ExecuteActivity(ctx, "Activities.ReleaseStock", reservationId)
+	defer workflow.ExecuteActivity(ctx, "ReleaseStock", reservationId)
 
-	if err := workflow.ExecuteActivity(ctx, "Activities.CreateOrder", in.OrderID, in.UserID, in.Items, in.Currency, in.AmountCents).Get(ctx, nil); err != nil {
+	if err := workflow.ExecuteActivity(ctx, "CreateOrder", in.OrderID, in.UserID, in.Items, in.Currency, in.AmountCents).Get(ctx, nil); err != nil {
 		return "", fmt.Errorf("create order: %w", err)
 	}
-	defer workflow.ExecuteActivity(ctx, "Activities.CancelOrder", in.OrderID)
+	defer workflow.ExecuteActivity(ctx, "CancelOrder", in.OrderID)
 
 	var paymentID string
-	if err := workflow.ExecuteActivity(ctx, "Activities.CreatePayment", in.OrderID, in.UserID, in.AmountCents, in.Currency).Get(ctx, &paymentID); err != nil {
+	if err := workflow.ExecuteActivity(ctx, "CreatePayment", in.OrderID, in.UserID, in.AmountCents, in.Currency).Get(ctx, &paymentID); err != nil {
 		return "", fmt.Errorf("create payment: %w", err)
 	}
 
@@ -72,13 +74,13 @@ func CheckoutWorkflow(ctx workflow.Context, in CheckoutInput) (string, error) {
 		return "", fmt.Errorf("payment not successful")
 	}
 
-	if err := workflow.ExecuteActivity(ctx, "Activities.ConfirmOrder", in.OrderID).Get(ctx, nil); err != nil {
-		_ = workflow.ExecuteActivity(ctx, "Activities.RefundPayment", paymentID).Get(ctx, nil)
+	if err := workflow.ExecuteActivity(ctx, "ConfirmOrder", in.OrderID).Get(ctx, nil); err != nil {
+		_ = workflow.ExecuteActivity(ctx, "RefundPayment", paymentID).Get(ctx, nil)
 		return "", fmt.Errorf("confirm order: %w", err)
 	}
 
-	if err := workflow.ExecuteActivity(ctx, "Activities.CommitStock", reservationId).Get(ctx, nil); err != nil {
-		_ = workflow.ExecuteActivity(ctx, "Activities.RefundPayment", paymentID).Get(ctx, nil)
+	if err := workflow.ExecuteActivity(ctx, "CommitStock", reservationId).Get(ctx, nil); err != nil {
+		_ = workflow.ExecuteActivity(ctx, "RefundPayment", paymentID).Get(ctx, nil)
 		return "", fmt.Errorf("commit stock: %w", err)
 	}
 

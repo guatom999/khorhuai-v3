@@ -2,6 +2,7 @@ package orderHandlers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -29,20 +30,24 @@ func (h *orderHandler) CreateOrder(c echo.Context) error {
 
 	wrapper := request.NewContextWrapper(c)
 
+	log.Printf("request body: %v", req)
+
 	if err := wrapper.Bind(req); err != nil {
+		log.Printf("error is invalid body %v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid body"})
 	}
 
 	if len(req.Items) == 0 {
+		log.Println("error is items required")
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "items required"})
 	}
 
 	input := modules.CreateOrderInput{
-		UserID:       req.UserID,
-		Currency:     req.Currency,
-		Items:        make([]modules.OrderItemInput, 0, len(req.Items)),
-		ShippingAddr: req.BillingAddr,
-		BillingAddr:  req.BillingAddr,
+		UserID:   req.UserID,
+		Currency: req.Currency,
+		Items:    make([]modules.OrderItemInput, 0, len(req.Items)),
+		// ShippingAddr: req.BillingAddr,
+		// BillingAddr:  req.BillingAddr,
 	}
 
 	for _, it := range req.Items {
@@ -57,7 +62,8 @@ func (h *orderHandler) CreateOrder(c echo.Context) error {
 
 	orderId, err := h.orderUsecase.Create(ctx, input)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()}) // TODO: change error message
+		log.Printf("error is %v", err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"order_id": orderId})

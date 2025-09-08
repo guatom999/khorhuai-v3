@@ -23,11 +23,11 @@ type CreateOrderInput struct {
 }
 
 type OrderItemInput struct {
-	ProductID string
-	Title     string
-	SKU       *string
-	Quantity  int
-	UnitPrice int64
+	ProductID string  `json:"product_id"`
+	Title     string  `json:"title"`
+	SKU       *string `json:"sku,omitempty"`
+	Quantity  int     `json:"quantity"`
+	UnitPrice int64   `json:"unit_price"`
 }
 
 type OrderDetail struct {

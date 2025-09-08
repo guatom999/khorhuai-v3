@@ -29,7 +29,7 @@ func (h *OrderClient) Create(ctx context.Context, orderID, userID, currency stri
 			"total_price": total,
 			"items":       items,
 		}).
-		Post(h.baseUrl + "/app/v1/orders")
+		Post(h.baseUrl + "/app/v1/orders/")
 	return err
 }
 

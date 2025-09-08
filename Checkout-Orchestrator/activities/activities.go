@@ -30,7 +30,7 @@ func NewActitivities(cfg *config.Config) *Activities {
 	}
 }
 
-func (a *Activities) ReserveStock(ctx context.Context, orderId string, items []workflows.Item, ttl int) (string, error) {
+func (a *Activities) ReserveStock(ctx context.Context, orderId string, userId string, items []workflows.Item, ttl int) (string, error) {
 
 	body := make([]map[string]any, 0, len(items))
 	for _, item := range items {
@@ -40,7 +40,7 @@ func (a *Activities) ReserveStock(ctx context.Context, orderId string, items []w
 		})
 	}
 
-	return a.Inventory.Reserve(ctx, orderId, ttl, body)
+	return a.Inventory.Reserve(ctx, orderId, userId, ttl, body)
 }
 
 func (a *Activities) ReleaseStock(ctx context.Context, reservationId string) error {

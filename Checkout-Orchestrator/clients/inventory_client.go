@@ -23,7 +23,7 @@ func NewInventoryClient(baseUrl string) *InventoryClient {
 	}
 }
 
-func (h *InventoryClient) Reserve(ctx context.Context, orderId string, ttl int, items []map[string]any) (string, error) {
+func (h *InventoryClient) Reserve(ctx context.Context, orderId string, userId string, ttl int, items []map[string]any) (string, error) {
 
 	type reserveOutput struct {
 		ReservationId string `json:"reservation_id"`
@@ -33,6 +33,7 @@ func (h *InventoryClient) Reserve(ctx context.Context, orderId string, ttl int, 
 	if _, err := h.http.R().SetContext(ctx).SetBody(
 		map[string]any{
 			"order_id":    orderId,
+			"user_id":     userId,
 			"ttl_seconds": ttl,
 			"items":       items,
 		},

@@ -33,7 +33,7 @@ func (c *PaymentClient) Create(ctx context.Context, orderId, userId string, amou
 		"user_id":  userId,
 		"amount":   amount,
 		"currency": currency,
-	}).SetResult(paymentOut).Post(c.baseUrl + "/app/v1/payments"); err != nil {
+	}).SetResult(paymentOut).Post(c.baseUrl + "/app/v1/payments/"); err != nil {
 		return "", err
 	}
 

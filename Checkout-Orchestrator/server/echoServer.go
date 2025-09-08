@@ -24,16 +24,20 @@ type (
 		client client.Client
 	}
 
+	Item struct {
+		ProductID string `json:"product_id"`
+		Title     string `json:"title"`
+		UnitPrice int    `json:"unit_price"`
+		Quantity  int    `json:"quantity"`
+	}
+
 	Request struct {
 		OrderID     string `json:"order_id"`
 		UserID      string `json:"user_id"`
 		Currency    string `json:"currency"`
 		AmountCents int64  `json:"amount_cents"`
 		TTLSeconds  int    `json:"ttl_seconds"`
-		Items       []struct {
-			ProductID string `json:"product_id"`
-			Quantity  int    `json:"quantity"`
-		} `json:"items"`
+		Items       []Item `json:"items"`
 	}
 )
 
@@ -83,14 +87,18 @@ func (s *server) Start(pctx context.Context) {
 		}
 
 		in := workflows.CheckoutInput{
-			OrderID: req.OrderID, UserID: req.UserID,
-			Currency: req.Currency, AmountCents: req.AmountCents,
-			TTLSeconds: req.TTLSeconds,
+			OrderID:     req.OrderID,
+			UserID:      req.UserID,
+			Currency:    req.Currency,
+			AmountCents: req.AmountCents,
+			TTLSeconds:  req.TTLSeconds,
 		}
 
 		for _, item := range req.Items {
 			in.Items = append(in.Items, workflows.Item{
 				ProductID: item.ProductID,
+				Title:     item.Title,
+				UnitPrice: item.UnitPrice,
 				Quantity:  item.Quantity,
 			})
 		}
