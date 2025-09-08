@@ -2,6 +2,14 @@
 CREATE EXTENSION
 IF NOT EXISTS pgcrypto;
 
+CREATE TABLE
+IF NOT EXISTS stock_levels
+(
+  product_id UUID PRIMARY KEY,
+  stock_qty  INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 CREATE TABLE
 IF NOT EXISTS stock_reservations

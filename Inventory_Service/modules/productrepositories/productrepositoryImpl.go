@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/guatom999/ecommerce-product-api/modules"
@@ -52,10 +53,10 @@ func (r *productRepositoryImpl) Reserve(ctx context.Context, input modules.Reser
 
 	for _, it := range input.Items {
 		res, err := tx.ExecContext(ctx, `
-		  UPDATE products
-		  SET stock_qty = stock_qty - $2,
-		      updated_at = CURRENT_TIMESTAMP
-		  WHERE id = $1 AND stock_qty >= $2
+  			UPDATE stock_levels
+  			SET stock_qty = stock_qty - $2,
+  			    updated_at = CURRENT_TIMESTAMP
+  			WHERE product_id = $1 AND stock_qty >= $2
 		`, it.ProductID, it.Quantity)
 		if err != nil {
 			return "", err
@@ -79,6 +80,7 @@ func (r *productRepositoryImpl) Reserve(ctx context.Context, input modules.Reser
 
 	return reserveID, err
 }
+
 func (r *productRepositoryImpl) Release(ctx context.Context, reservationID string) error {
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -90,41 +92,78 @@ func (r *productRepositoryImpl) Release(ctx context.Context, reservationID strin
 		}
 	}()
 
-	var status string
-	if err := r.db.GetContext(ctx, &status, `SELECT status FROM stock_reservations WHERE id = $1`, reservationID); err != nil {
+	rows, err := tx.QueryContext(ctx, `
+	  SELECT product_id, quantity
+	  FROM stock_reservation_items
+	  WHERE reservation_id=$1
+	`, reservationID)
+	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	if status == "released" {
-		return nil
-	}
-	if status == "committed" {
-		return nil
-	}
+	for rows.Next() {
+		var product_id string
+		var quantity int
+		if err := rows.Scan(&product_id, &quantity); err != nil {
+			log.Printf("scan row failed: %v", err)
+			return err
+		}
 
-	items := make([]modules.Item, 0)
-	if err := tx.SelectContext(ctx, &items, `SELECT product_id, quantity FROM stock_reservation_items WHERE reservation_id=$1`, reservationID); err != nil {
-		return err
-	}
-
-	for _, v := range items {
-		if _, err := tx.ExecContext(ctx, `
-			UPDATE products
-		  	SET stock_qty = stock_qty + $2,
-		    	updated_at = CURRENT_TIMESTAMP
-		  	WHERE id = $1
-		`, v.ProductId, v.Quantity); err != nil {
+		_, err = tx.ExecContext(ctx, `
+		  UPDATE stock_levels
+		  SET stock_qty = stock_qty + $2,
+		      updated_at = CURRENT_TIMESTAMP
+		  WHERE product_id=$1
+		`, product_id, quantity)
+		if err != nil {
 			return err
 		}
 	}
 
-	if _, err = tx.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 	  UPDATE stock_reservations
-	  SET status='released', updated_at=CURRENT_TIMESTAMP
+	  SET status='released'
 	  WHERE id=$1 AND status='held'
-	`, reservationID); err != nil {
+	`, reservationID)
+	if err != nil {
 		return err
 	}
+	// var status string
+	// if err := r.db.GetContext(ctx, &status, `SELECT status FROM stock_reservations WHERE id = $1`, reservationID); err != nil {
+	// 	return err
+	// }
+
+	// if status == "released" {
+	// 	return nil
+	// }
+	// if status == "committed" {
+	// 	return nil
+	// }
+
+	// items := make([]modules.Item, 0)
+	// if err := tx.SelectContext(ctx, &items, `SELECT product_id, quantity FROM stock_reservation_items WHERE reservation_id=$1`, reservationID); err != nil {
+	// 	return err
+	// }
+
+	// for _, v := range items {
+	// 	if _, err := tx.ExecContext(ctx, `
+	// 		UPDATE products
+	// 	  	SET stock_qty = stock_qty + $2,
+	// 	    	updated_at = CURRENT_TIMESTAMP
+	// 	  	WHERE id = $1
+	// 	`, v.ProductId, v.Quantity); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if _, err = tx.ExecContext(ctx, `
+	//   UPDATE stock_reservations
+	//   SET status='released', updated_at=CURRENT_TIMESTAMP
+	//   WHERE id=$1 AND status='held'
+	// `, reservationID); err != nil {
+	// 	return err
+	// }
 
 	err = tx.Commit()
 
