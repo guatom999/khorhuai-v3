@@ -3,7 +3,7 @@ package modules
 import "time"
 
 type CreatePaymentRequest struct {
-	OrderID  string `json:"order_id" validate:"required,uuid4"`
+	OrderID  string `json:"order_id" validate:"required"`
 	UserID   string `json:"user_id,omitempty"`
 	Amount   int64  `json:"amount" validate:"required,min=0"`
 	Currency string `json:"currency" validate:"required,len=3"`

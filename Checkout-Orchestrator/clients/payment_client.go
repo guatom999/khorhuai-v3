@@ -23,7 +23,12 @@ func NewPaymentClient(baseUrl string) *PaymentClient {
 func (c *PaymentClient) Create(ctx context.Context, orderId, userId string, amount int64, currency string) (string, error) {
 
 	type paymentOutput struct {
-		PaymentId string `json:"payment_id"`
+		PaymentId string `json:"id"`
+		OrderId   string `json:"order_id"`
+		UserId    string `json:"user_id"`
+		Amount    int64  `json:"amount"`
+		Currency  string `json:"currency"`
+		Status    string `json:"status"`
 	}
 
 	paymentOut := new(paymentOutput)
