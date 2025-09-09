@@ -103,7 +103,11 @@ func releasereservation(ctx context.Context, db *sqlx.DB, reserveId string) erro
 	}()
 
 	var status string
-	if err := tx.GetContext(ctx, &status, `SELECT status FROM stock_reservations WHERE id = $1 FOR UPDATE`, reserveId); err != nil {
+	if err := tx.GetContext(ctx, &status, `
+		SELECT status 
+			FROM stock_reservations 
+		WHERE id = $1 FOR UPDATE
+	`, reserveId); err != nil {
 		return err
 	}
 	if status != "held" {
@@ -112,25 +116,28 @@ func releasereservation(ctx context.Context, db *sqlx.DB, reserveId string) erro
 
 	items := make([]item, 0)
 
-	if err := tx.SelectContext(ctx, &items, `SELECT product_id, quantity FROM stock_reservation_items WHERE reservation_id = $1`, reserveId); err != nil {
+	if err := tx.SelectContext(ctx, &items, `
+		SELECT product_id, quantity 
+			FROM stock_reservation_items 
+		WHERE reservation_id = $1
+	`, reserveId); err != nil {
 		return err
 	}
 
-	for _, item := range items {
-		if _, err := tx.ExecContext(ctx, `
-					UPDATE products
-			SET stock_qty = stock_qty + $2,
-			    updated_at = CURRENT_TIMESTAMP
-			WHERE id = $1
-			`, item.ProductID, item.Quantity,
-		); err != nil {
+	for _, it := range items {
+		if _, err = tx.ExecContext(ctx, `
+			UPDATE stock_levels
+			   SET stock_qty = stock_qty + $2,
+			       updated_at = CURRENT_TIMESTAMP
+			 WHERE product_id = $1
+		`, it.ProductID, it.Quantity); err != nil {
 			return err
 		}
 	}
 
 	if _, err = tx.ExecContext(ctx, `
 		UPDATE stock_reservations
-		SET status='released', updated_at=CURRENT_TIMESTAMP
+			SET status='released', updated_at=CURRENT_TIMESTAMP
 		WHERE id=$1 AND status='held'
 	`, reserveId); err != nil {
 		return err

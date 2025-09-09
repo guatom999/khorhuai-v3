@@ -129,46 +129,40 @@ func (r *productRepositoryImpl) Release(ctx context.Context, reservationID strin
 	if err != nil {
 		return err
 	}
-	// var status string
-	// if err := r.db.GetContext(ctx, &status, `SELECT status FROM stock_reservations WHERE id = $1`, reservationID); err != nil {
-	// 	return err
-	// }
-
-	// if status == "released" {
-	// 	return nil
-	// }
-	// if status == "committed" {
-	// 	return nil
-	// }
-
-	// items := make([]modules.Item, 0)
-	// if err := tx.SelectContext(ctx, &items, `SELECT product_id, quantity FROM stock_reservation_items WHERE reservation_id=$1`, reservationID); err != nil {
-	// 	return err
-	// }
-
-	// for _, v := range items {
-	// 	if _, err := tx.ExecContext(ctx, `
-	// 		UPDATE products
-	// 	  	SET stock_qty = stock_qty + $2,
-	// 	    	updated_at = CURRENT_TIMESTAMP
-	// 	  	WHERE id = $1
-	// 	`, v.ProductId, v.Quantity); err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	// if _, err = tx.ExecContext(ctx, `
-	//   UPDATE stock_reservations
-	//   SET status='released', updated_at=CURRENT_TIMESTAMP
-	//   WHERE id=$1 AND status='held'
-	// `, reservationID); err != nil {
-	// 	return err
-	// }
 
 	err = tx.Commit()
 
 	return err
 }
+
+func (r *productRepositoryImpl) ReleaseExpired(ctx context.Context) error {
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id FROM stock_reservations
+		WHERE status='held' AND expires_at <= CURRENT_TIMESTAMP
+	`)
+	if err != nil {
+		log.Printf("query expired reservations failed: %v", err)
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var reservationID string
+		if err := rows.Scan(&reservationID); err != nil {
+			log.Printf("scan reservationID failed: %v", err)
+			return err
+		}
+		if err := r.Release(ctx, reservationID); err != nil {
+			log.Printf("release reservation %s failed: %v", reservationID, err)
+			return err
+		}
+	}
+
+	return nil
+
+}
+
 func (r *productRepositoryImpl) Commit(ctx context.Context, reservationID string) error {
 	if _, err := r.db.ExecContext(ctx, `
 	  UPDATE stock_reservations

@@ -27,12 +27,11 @@ IF NOT EXISTS stock_reservations
 CREATE TABLE
 IF NOT EXISTS stock_reservation_items
 (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid
+(),
   reservation_id UUID NOT NULL,
-  product_id     UUID NOT NULL,
-  quantity       INTEGER NOT NULL CHECK
-(quantity > 0),
-  PRIMARY KEY
-(reservation_id, product_id),
+  product_id UUID NOT NULL,
+  quantity INTEGER NOT NULL,
   FOREIGN KEY
 (reservation_id) REFERENCES stock_reservations
 (id) ON

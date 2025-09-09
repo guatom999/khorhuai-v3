@@ -81,6 +81,15 @@ func (s *server) productModules() {
 
 	route := s.app.Group("/app/v1/stock")
 
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		for {
+			productRepo.ReleaseExpired(context.Background())
+			<-ticker.C
+		}
+	}()
+
 	route.POST("/reserve", productHandler.Reserve)
 	route.POST("/release", productHandler.Release)
 	route.POST("/commit", productHandler.Commit)
