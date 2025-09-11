@@ -28,6 +28,13 @@ type PaymentStatusChanged struct {
 	OccurredAt time.Time `json:"occurred_at"`
 }
 
+type WebhookEvent struct {
+	OrderId   string `json:"order_id"`
+	Status    string `json:"status"` // "succeeded" or "failed"
+	PaymentId string `json:"payment_id"`
+	EventId   string `json:"event_id"`
+}
+
 // type CreatePaymentInput struct {
 // 	OrderID  string
 // 	UserID   string

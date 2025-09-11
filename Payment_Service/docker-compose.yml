@@ -166,6 +166,7 @@ services:
     #   - ./env/.env:/env/.env
     networks:
       - appnet
+      - temporal-network
 
   outboxrelay:
     # image: badzboss/ecommerce-payment-api:latest
@@ -192,6 +193,7 @@ services:
     #   - ./env/.env:/env/.env
     networks:
       - appnet
+      - temporal-network
 
 volumes:
   pgdata:
@@ -201,3 +203,6 @@ volumes:
 
 networks:
   appnet:
+    driver: bridge
+  temporal-network:
+    external: true

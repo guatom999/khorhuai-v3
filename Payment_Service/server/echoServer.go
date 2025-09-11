@@ -18,25 +18,28 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.temporal.io/sdk/client"
 
 	echoprom "github.com/labstack/echo-contrib/prometheus"
 )
 
 type (
 	server struct {
-		app     *echo.Echo
-		db      *sqlx.DB
-		cfg     *config.Config
-		redisDb *redisdb.Store
+		app      *echo.Echo
+		db       *sqlx.DB
+		cfg      *config.Config
+		redisDb  *redisdb.Store
+		temporal client.Client
 	}
 )
 
-func NewEchoServer(cfg *config.Config, db *sqlx.DB, redisDb *redisdb.Store) *server {
+func NewEchoServer(cfg *config.Config, db *sqlx.DB, redisDb *redisdb.Store, temporal client.Client) *server {
 	return &server{
-		app:     echo.New(),
-		cfg:     cfg,
-		db:      db,
-		redisDb: redisDb,
+		app:      echo.New(),
+		cfg:      cfg,
+		db:       db,
+		redisDb:  redisDb,
+		temporal: temporal,
 	}
 }
 
@@ -92,7 +95,8 @@ func (s *server) Start(pctx context.Context) {
 func (s *server) paymentModules() {
 	paymentRepo := paymentrepositories.NewPaymentRepository(s.db)
 	paymentUsecase := paymentusecases.NewPaymentUsecase(paymentRepo, s.redisDb)
-	paymenthandlers := paymenthandlers.NewPaymenthandler(paymentUsecase)
+	paymentHandler := paymenthandlers.NewPaymenthandler(paymentUsecase)
+	paymentWebhookHandler := paymenthandlers.NewWebhookHandler(s.temporal, s.redisDb.Rdb)
 
 	paymentRoute := s.app.Group("/app/v1/payments")
 
@@ -100,10 +104,14 @@ func (s *server) paymentModules() {
 		return c.JSON(http.StatusOK, "ok")
 	})
 
-	paymentRoute.POST("/", paymenthandlers.CreatePayment)
+	paymentRoute.POST("/", paymentHandler.CreatePayment)
 
-	paymentRoute.GET("/:id", paymenthandlers.GetPayment)
+	paymentRoute.GET("/:id", paymentHandler.GetPayment)
 
-	paymentRoute.PATCH("/:id/status", paymenthandlers.UpdatePaymentStatus)
+	paymentRoute.PATCH("/:id/status", paymentHandler.UpdatePaymentStatus)
+
+	paymentWebhookRoute := s.app.Group("/payments/webhook")
+
+	paymentWebhookRoute.POST("/", paymentWebhookHandler.PaymentWebhook)
 
 }

@@ -63,14 +63,18 @@ func CheckoutWorkflow(ctx workflow.Context, in CheckoutInput) (string, error) {
 
 	sigCh := workflow.GetSignalChannel(ctx, "payment_signal")
 	var sig PaymentSignal
-	received, _ := workflow.AwaitWithTimeout(ctx, 15*time.Minute, func() bool {
+	received, _ := workflow.AwaitWithTimeout(ctx, 10*time.Minute, func() bool {
 		return sigCh.ReceiveAsync(&sig)
 	})
 	if sig.Status != "" {
 		received = true
 	}
 
-	if !received || sig.Status != "succeeded" {
+	if !received {
+		return "", fmt.Errorf("didn't recieve")
+	}
+
+	if sig.Status != "succeeded" {
 		return "", fmt.Errorf("payment not successful")
 	}
 

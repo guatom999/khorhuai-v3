@@ -10,13 +10,14 @@ import (
 
 type (
 	Config struct {
-		App    App
-		Db     Db
-		Redis  Redis
-		JWT    JWT
-		Kafka  Kafka
-		Outbox Outbox
-		Otel   Otel
+		App      App
+		Db       Db
+		Redis    Redis
+		JWT      JWT
+		Kafka    Kafka
+		Outbox   Outbox
+		Otel     Otel
+		Temporal Temporal
 	}
 
 	App struct {
@@ -48,6 +49,10 @@ type (
 	Otel struct {
 		ServiceName string
 		Endpoint    string
+	}
+
+	Temporal struct {
+		TemporalHostPort string
 	}
 
 	JWT struct {
@@ -111,6 +116,9 @@ func NewConfig() *Config {
 		Otel: Otel{
 			ServiceName: os.Getenv("APP_NAME"),
 			Endpoint:    os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
+		},
+		Temporal: Temporal{
+			TemporalHostPort: os.Getenv("TEMPORAL_HOST_PORT"),
 		},
 		JWT: JWT{
 			SecretKey: os.Getenv("JWT_SECRET_KEY"),

@@ -8,4 +8,8 @@ type (
 		GetPayment(c echo.Context) error
 		UpdatePaymentStatus(c echo.Context) error
 	}
+
+	PaymentWebhookHandlerInterface interface {
+		PaymentWebhook(c echo.Context) error
+	}
 )
